@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Perspective. All rights reserved.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="before.body.end">
+            <block name="perspective.zaraz.success.events" template="Perspective_Zaraz::page-events.phtml"
+                   ifconfig="perspective_zaraz/general/enabled" cacheable="false" before="-">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Perspective\Zaraz\ViewModel\PageEvents</argument>
+                    <argument name="context_provider"
+                              xsi:type="object">Perspective\Zaraz\Model\Page\SuccessPageContext</argument>
+                    <argument name="events" xsi:type="array">
+                        <item name="order_completed" xsi:type="string">order_completed</item>
+                    </argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

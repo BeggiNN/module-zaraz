@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Perspective. All rights reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Customer:etc/sections.xsd">
+    <!-- Actions that can queue Zaraz events or change user properties: the section is reloaded after them -->
+    <action name="checkout/cart/add"><section name="perspective-zaraz"/></action>
+    <action name="checkout/cart/addgroup"><section name="perspective-zaraz"/></action>
+    <action name="checkout/cart/updateItemOptions"><section name="perspective-zaraz"/></action>
+    <action name="checkout/cart/updatePost"><section name="perspective-zaraz"/></action>
+    <action name="checkout/cart/updateItemQty"><section name="perspective-zaraz"/></action>
+    <action name="checkout/cart/delete"><section name="perspective-zaraz"/></action>
+    <action name="checkout/cart/couponPost"><section name="perspective-zaraz"/></action>
+    <action name="checkout/sidebar/removeItem"><section name="perspective-zaraz"/></action>
+    <action name="checkout/sidebar/updateItemQty"><section name="perspective-zaraz"/></action>
+    <action name="wishlist/index/add"><section name="perspective-zaraz"/></action>
+    <action name="wishlist/index/cart"><section name="perspective-zaraz"/></action>
+    <action name="wishlist/index/allcart"><section name="perspective-zaraz"/></action>
+    <action name="wishlist/shared/cart"><section name="perspective-zaraz"/></action>
+    <action name="wishlist/shared/allcart"><section name="perspective-zaraz"/></action>
+    <action name="catalog/product_compare/add"><section name="perspective-zaraz"/></action>
+    <action name="sales/order/reorder"><section name="perspective-zaraz"/></action>
+    <action name="customer/account/loginPost"><section name="perspective-zaraz"/></action>
+    <action name="customer/account/createpost"><section name="perspective-zaraz"/></action>
+    <action name="customer/account/editPost"><section name="perspective-zaraz"/></action>
+    <action name="customer/ajax/login"><section name="perspective-zaraz"/></action>
+</config>

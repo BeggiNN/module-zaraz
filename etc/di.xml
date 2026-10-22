@@ -1,0 +1,136 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Perspective. All rights reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Perspective\Zaraz\Api\Data\EventInterface" type="Perspective\Zaraz\Model\Event\Event"/>
+    <preference for="Perspective\Zaraz\Api\Data\EventContextInterface" type="Perspective\Zaraz\Model\Event\Context"/>
+    <preference for="Perspective\Zaraz\Api\EventGeneratorInterface" type="Perspective\Zaraz\Model\Event\Generator"/>
+
+    <!-- Event builders: add or replace an event by declaring an item with its code -->
+    <type name="Perspective\Zaraz\Model\Event\BuilderPool">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="product_list_viewed"
+                      xsi:type="object">Perspective\Zaraz\Model\Event\Builder\ProductListViewed</item>
+                <item name="products_searched"
+                      xsi:type="object">Perspective\Zaraz\Model\Event\Builder\ProductsSearched</item>
+                <item name="product_clicked"
+                      xsi:type="object">Perspective\Zaraz\Model\Event\Builder\ProductClicked</item>
+                <item name="product_viewed" xsi:type="object">Perspective\Zaraz\Model\Event\Builder\ProductViewed</item>
+                <item name="product_added" xsi:type="object">Perspective\Zaraz\Model\Event\Builder\ProductAdded</item>
+                <item name="product_removed"
+                      xsi:type="object">Perspective\Zaraz\Model\Event\Builder\ProductRemoved</item>
+                <item name="product_added_to_wishlist"
+                      xsi:type="object">Perspective\Zaraz\Model\Event\Builder\ProductAddedToWishlist</item>
+                <item name="product_added_to_compare"
+                      xsi:type="object">Perspective\Zaraz\Model\Event\Builder\ProductAddedToCompare</item>
+                <item name="cart_viewed" xsi:type="object">Perspective\Zaraz\Model\Event\Builder\CartViewed</item>
+                <item name="checkout_started"
+                      xsi:type="object">Perspective\Zaraz\Model\Event\Builder\CheckoutStarted</item>
+                <item name="checkout_step_viewed"
+                      xsi:type="object">Perspective\Zaraz\Model\Event\Builder\CheckoutStepViewed</item>
+                <item name="checkout_step_completed"
+                      xsi:type="object">Perspective\Zaraz\Model\Event\Builder\CheckoutStepCompleted</item>
+                <item name="shipping_info_entered"
+                      xsi:type="object">Perspective\Zaraz\Model\Event\Builder\ShippingInfoEntered</item>
+                <item name="payment_info_entered"
+                      xsi:type="object">Perspective\Zaraz\Model\Event\Builder\PaymentInfoEntered</item>
+                <item name="order_completed"
+                      xsi:type="object">Perspective\Zaraz\Model\Event\Builder\OrderCompleted</item>
+                <item name="viewed_promotion"
+                      xsi:type="object">Perspective\Zaraz\Model\Event\Builder\ViewedPromotion</item>
+                <item name="clicked_promotion"
+                      xsi:type="object">Perspective\Zaraz\Model\Event\Builder\ClickedPromotion</item>
+                <item name="coupon_applied" xsi:type="object">Perspective\Zaraz\Model\Event\Builder\CouponApplied</item>
+                <item name="coupon_removed" xsi:type="object">Perspective\Zaraz\Model\Event\Builder\CouponRemoved</item>
+                <item name="login" xsi:type="object">Perspective\Zaraz\Model\Event\Builder\Login</item>
+                <item name="sign_up" xsi:type="object">Perspective\Zaraz\Model\Event\Builder\SignUp</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Product / order data modifiers: other modules add items here -->
+    <type name="Perspective\Zaraz\Model\Mapper\Modifier\ProductDataModifierPool">
+        <arguments>
+            <argument name="modifiers" xsi:type="array">
+                <item name="brand" xsi:type="object">Perspective\Zaraz\Model\Mapper\Modifier\Product\Brand</item>
+                <item name="stock_status"
+                      xsi:type="object">Perspective\Zaraz\Model\Mapper\Modifier\Product\StockStatus</item>
+                <item name="reviews" xsi:type="object">Perspective\Zaraz\Model\Mapper\Modifier\Product\Reviews</item>
+                <item name="on_sale" xsi:type="object">Perspective\Zaraz\Model\Mapper\Modifier\Product\OnSale</item>
+                <item name="custom_attributes"
+                      xsi:type="object">Perspective\Zaraz\Model\Mapper\Modifier\Product\CustomAttributes</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Perspective\Zaraz\Model\Mapper\Modifier\OrderDataModifierPool">
+        <arguments>
+            <argument name="modifiers" xsi:type="array">
+                <item name="google_ads" xsi:type="object">Perspective\Zaraz\Model\Mapper\Modifier\Order\GoogleAds</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Product list resolvers: specific blocks first, the generic ListProduct last -->
+    <type name="Perspective\Zaraz\Model\ProductList\ResolverPool">
+        <arguments>
+            <argument name="resolvers" xsi:type="array">
+                <item name="related" xsi:type="object">Perspective\Zaraz\Model\ProductList\Resolver\RelatedList</item>
+                <item name="upsell" xsi:type="object">Perspective\Zaraz\Model\ProductList\Resolver\UpsellList</item>
+                <item name="crosssell"
+                      xsi:type="object">Perspective\Zaraz\Model\ProductList\Resolver\CrosssellList</item>
+                <item name="widget" xsi:type="object">Perspective\Zaraz\Model\ProductList\Resolver\WidgetList</item>
+                <item name="category" xsi:type="object">Perspective\Zaraz\Model\ProductList\Resolver\CategoryList</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Dedicated session namespace for the action event queue; the proxy defers session start -->
+    <virtualType name="PerspectiveZarazSessionStorage" type="Magento\Framework\Session\Storage">
+        <arguments>
+            <argument name="namespace" xsi:type="string">perspective_zaraz</argument>
+        </arguments>
+    </virtualType>
+    <type name="Perspective\Zaraz\Model\Session">
+        <arguments>
+            <argument name="storage" xsi:type="object">PerspectiveZarazSessionStorage</argument>
+        </arguments>
+    </type>
+    <type name="Perspective\Zaraz\Model\Event\EventQueue">
+        <arguments>
+            <argument name="session" xsi:type="object">Perspective\Zaraz\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
+
+    <!-- Page context providers read session/request lazily -->
+    <type name="Perspective\Zaraz\Model\Page\SuccessPageContext">
+        <arguments>
+            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Perspective\Zaraz\Model\Page\CartPageContext">
+        <arguments>
+            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Perspective\Zaraz\Model\Customer\UserProperties">
+        <arguments>
+            <argument name="customerSession" xsi:type="object">Magento\Customer\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
+
+    <!-- Script host of the manually loaded Zaraz script (when it is on another domain) -->
+    <type name="Magento\Csp\Model\CompositePolicyCollector">
+        <arguments>
+            <argument name="collectors" xsi:type="array">
+                <item name="perspective_zaraz"
+                      xsi:type="object"
+                      sortOrder="4">Perspective\Zaraz\Model\Csp\ZarazScriptCollector\Proxy</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

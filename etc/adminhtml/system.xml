@@ -1,0 +1,1050 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Perspective. All rights reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="perspective" translate="label" sortOrder="400">
+            <label>Perspective Extensions</label>
+        </tab>
+        <section id="perspective_zaraz"
+                 translate="label"
+                 sortOrder="10"
+                 showInDefault="1"
+                 showInWebsite="1"
+                 showInStore="1">
+            <class>separator-top</class>
+            <label>Cloudflare Zaraz</label>
+            <tab>perspective</tab>
+            <resource>Perspective_Zaraz::config</resource>
+
+            <group id="general"
+                   translate="label comment"
+                   sortOrder="10"
+                   showInDefault="1"
+                   showInWebsite="1"
+                   showInStore="1">
+                <label>General</label>
+                <comment><![CDATA[
+                    The module only produces data for Zaraz (<code>zaraz.ecommerce()</code>, <code>zaraz.track()</code>,
+                    <code>zaraz.set()</code>). Tools (GA4, Ads, Meta…), their IDs and consent are configured in the
+                    Cloudflare Zaraz dashboard; enable <b>E-commerce tracking</b> there in Settings and in every tool.
+                ]]></comment>
+                <field id="enabled"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="10"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Enable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>No: no scripts are printed, no events are queued, no data is loaded.</comment>
+                </field>
+                <field id="debug"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="20"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Debug Mode</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[
+                        Logs every event (method, name, payload) and Zaraz spec warnings to the browser console. Works
+                        without Cloudflare: events wait in <code>PerspectiveZaraz.getPending()</code> when Zaraz is not
+                        loaded. Does not change what is sent.
+                    ]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="debug_ips"
+                       translate="label comment"
+                       type="text"
+                       sortOrder="30"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1">
+                    <label>Debug Only for IPs</label>
+                    <comment><![CDATA[
+                        Comma separated. Empty = debug for every visitor. With IPs the flag is delivered per visitor via
+                        customer-data (never cached in FPC/Varnish). Behind a proxy make sure Magento sees the client IP
+                        (e.g. CF-Connecting-IP).
+                    ]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                        <field id="debug">1</field>
+                    </depends>
+                </field>
+                <field id="script_mode"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="40"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Zaraz Script</label>
+                    <source_model>Perspective\Zaraz\Model\Config\Source\ScriptMode</source_model>
+                    <comment><![CDATA[
+                        Auto-inject: Cloudflare injects Zaraz (default for proxied domains). Manual: use when
+                        <i>Auto-inject script</i> is off in Zaraz Settings or the domain is not proxied; the module
+                        prints <code>&lt;script src="…" referrerpolicy="origin"&gt;</code> in &lt;head&gt;.
+                    ]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="script_url"
+                       translate="label comment"
+                       type="text"
+                       sortOrder="50"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Zaraz Script URL</label>
+                    <comment><![CDATA[
+                        Default <code>/cdn-cgi/zaraz/i.js</code>, or the custom endpoint from Zaraz Settings, or
+                        <code>https://proxied-subdomain.example.com/cdn-cgi/zaraz/i.js</code> for a domain not proxied
+                        by Cloudflare (its host is added to CSP script-src/connect-src).
+                    ]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                        <field id="script_mode">manual</field>
+                    </depends>
+                </field>
+                <field id="script_attributes"
+                       translate="label comment"
+                       type="text"
+                       sortOrder="60"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Script Tag Attributes</label>
+                    <comment><![CDATA[
+                        Added to the module core script and to the manual Zaraz script, e.g.
+                        <code>data-cfasync="false"</code> so Rocket Loader does not delay them. Event handler attributes
+                        (on*) and src/type/id/nonce are ignored.
+                    ]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="list_chunk_size"
+                       translate="label comment"
+                       type="text"
+                       sortOrder="70"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Product List Viewed Chunk Size</label>
+                    <validate>validate-digits validate-greater-than-zero</validate>
+                    <comment><![CDATA[
+                        Products per <code>Product List Viewed</code> event; a list of 36 products with size 20 sends 2
+                        events. Smaller chunks keep payloads under tool limits but each call is a billable Zaraz Event.
+                    ]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="checkout_paths"
+                       translate="label comment"
+                       type="textarea"
+                       sortOrder="80"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Custom Checkout Pages</label>
+                    <comment><![CDATA[
+                        One per line: full action name (<code>onestepcheckout_index_index</code>) or request path prefix
+                        (<code>onestepcheckout</code>). These pages get Checkout Started and the checkout templates. The
+                        native checkout is always covered.
+                    ]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="success_paths"
+                       translate="label comment"
+                       type="textarea"
+                       sortOrder="90"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Custom Success Pages</label>
+                    <comment><![CDATA[
+                        One per line, as above. These pages render <code>Order Completed</code> for the last order of
+                        the checkout session. The native success page is always covered.
+                    ]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+
+            <group id="events"
+                   translate="label comment"
+                   sortOrder="20"
+                   showInDefault="1"
+                   showInWebsite="1"
+                   showInStore="1">
+                <label>Events</label>
+                <comment><![CDATA[
+                    One row per event. <b>Zaraz event name</b> overrides the name passed to Zaraz (e-commerce tools
+                    recognise only the spec names, so override only for custom triggers). <b>From server</b> requires
+                    Perspective_ZarazServerSide: for Order Completed it is a fallback sent only when the browser did not
+                    deliver the event; Order Refunded / Order Cancelled exist only on the server. An event without a row
+                    uses its default: browser events are sent from the browser with the default name, Order Refunded
+                    is sent from the server, Order Cancelled is off.
+                ]]></comment>
+                <field id="events"
+                       translate="label"
+                       sortOrder="10"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Events</label>
+                    <frontend_model>Perspective\Zaraz\Block\Adminhtml\Form\Field\Events</frontend_model>
+                    <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
+                </field>
+            </group>
+
+            <group id="product" translate="label" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Product Identification</label>
+                <field id="id_source"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="10"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Product ID</label>
+                    <source_model>Perspective\Zaraz\Model\Config\Source\ProductIdSource</source_model>
+                    <comment><![CDATA[
+                        Value of <code>product_id</code>: <code>"MH01"</code> (SKU) or <code>"1284"</code> (entity id).
+                    ]]></comment>
+                </field>
+                <field id="send_sku"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="20"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Send "sku" Property</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[
+                        Adds <code>sku</code>. Note: Zaraz GA4 and Meta use <code>sku</code> as item id when it is
+                        present, so with Product ID = entity id set this to No to make the entity id reach those tools.
+                    ]]></comment>
+                </field>
+                <field id="configurable_mode"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="30"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Configurable Products</label>
+                    <source_model>Perspective\Zaraz\Model\Config\Source\ConfigurableMode</source_model>
+                    <comment><![CDATA[
+                        Cart and order lines of configurables:
+                        <code>product_id</code>/<code>sku</code>/<code>name</code> of the parent (e.g. "MH01") or of the
+                        selected child (e.g. "MH01-XS-Black"). Category is always taken from the parent. Product Viewed
+                        always uses the parent (no child is selected yet).
+                    ]]></comment>
+                </field>
+                <field id="view_send_children"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="35"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Product Viewed: Send All Children</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[
+                        For configurable products, <code>Product Viewed</code> also gets <code>products</code> with
+                        every salable child (variant, child price). Zaraz GA4 then sends these children as items of
+                        view_item.
+                    ]]></comment>
+                </field>
+                <field id="variant_enabled"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="40"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Send Variant</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[
+                        Adds <code>variant</code> for configurable lines with a selected child.
+                    ]]></comment>
+                </field>
+                <field id="variant_source"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="50"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Variant Source</label>
+                    <source_model>Perspective\Zaraz\Model\Config\Source\VariantSource</source_model>
+                    <comment><![CDATA[
+                        <code>variant</code>: "Black / XS" (option values), "MH01-XS-Black" (child SKU) or the child
+                        product name.
+                    ]]></comment>
+                    <depends>
+                        <field id="variant_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="brand_enabled"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="60"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Send Brand</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Adds <code>brand</code> (store-level label of the attribute below).]]></comment>
+                </field>
+                <field id="brand_attribute"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="70"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Brand Attribute</label>
+                    <source_model>Perspective\Zaraz\Model\Config\Source\ProductAttributes</source_model>
+                    <comment>Taken from the parent product.</comment>
+                    <depends>
+                        <field id="brand_enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+
+            <group id="price" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Prices and Totals</label>
+                <field id="currency_scope"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="10"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Currency</label>
+                    <source_model>Perspective\Zaraz\Model\Config\Source\CurrencyScope</source_model>
+                    <comment><![CDATA[
+                        <code>currency</code> and all amounts: the currency the customer sees / the order was placed in,
+                        or the base currency of the website.
+                    ]]></comment>
+                </field>
+                <field id="product_price_tax"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="20"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Product Prices</label>
+                    <source_model>Perspective\Zaraz\Model\Config\Source\PriceTax</source_model>
+                    <comment><![CDATA[
+                        <code>price</code> (and <code>value</code> of product events) with or without tax.
+                    ]]></comment>
+                </field>
+                <field id="order_total_source"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="30"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Order Total</label>
+                    <source_model>Perspective\Zaraz\Model\Config\Source\OrderTotalSource</source_model>
+                    <comment><![CDATA[
+                        <code>total</code> of Order Completed (GA4 uses it as the purchase <i>value</i>). Grand total:
+                        everything the customer paid, adjusted by the exclusions below. Subtotal: items after discount
+                        (+ item tax unless tax is excluded), never shipping. <code>revenue</code> is always subtotal
+                        after discount.
+                    ]]></comment>
+                </field>
+                <field id="exclude_tax"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="40"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Exclude Tax from Total</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[<code>total</code> without all tax (items and shipping).]]></comment>
+                </field>
+                <field id="exclude_shipping"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="50"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Exclude Shipping from Total</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[
+                        <code>total</code> without the shipping amount (shipping tax is controlled separately).
+                    ]]></comment>
+                    <depends>
+                        <field id="order_total_source">grand_total</field>
+                    </depends>
+                </field>
+                <field id="exclude_shipping_tax"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="60"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Exclude Shipping Tax from Total</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[<code>total</code> without tax charged on shipping.]]></comment>
+                    <depends>
+                        <field id="order_total_source">grand_total</field>
+                        <field id="exclude_tax">0</field>
+                    </depends>
+                </field>
+                <field id="shipping_incl_tax"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="70"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Shipping Including Tax</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[
+                        <code>shipping</code> property with shipping tax added. Does not change <code>total</code>.
+                    ]]></comment>
+                </field>
+            </group>
+
+            <group id="order" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Orders</label>
+                <field id="skip_zero_total"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="10"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Skip Zero Total Orders</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        Order Completed is not sent when the grand total is 0 (free orders, 100% discounts).
+                    </comment>
+                </field>
+                <field id="skip_statuses"
+                       translate="label comment"
+                       type="multiselect"
+                       sortOrder="20"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Skip Orders with Statuses</label>
+                    <source_model>Perspective\Zaraz\Model\Config\Source\OrderStatuses</source_model>
+                    <comment>
+                        Order Completed is not sent when the order has one of these statuses at the moment of placing
+                        (e.g. fraud, payment review).
+                    </comment>
+                    <can_be_empty>1</can_be_empty>
+                </field>
+                <field id="affiliation"
+                       translate="label comment"
+                       type="text"
+                       sortOrder="30"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Affiliation</label>
+                    <comment><![CDATA[
+                        <code>affiliation</code> of Order Completed. Empty = store name (General → Store Information →
+                        Store Name, or the store group name).
+                    ]]></comment>
+                </field>
+            </group>
+            <group id="category" translate="label" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Categories</label>
+                <field id="excluded"
+                       translate="label comment"
+                       type="multiselect"
+                       sortOrder="10"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Excluded Categories</label>
+                    <source_model>Perspective\Zaraz\Model\Config\Source\Categories</source_model>
+                    <can_be_empty>1</can_be_empty>
+                    <comment><![CDATA[
+                        Removed from category paths (e.g. "Default Category", "Sale", "New"). Empty = none.
+                    ]]></comment>
+                </field>
+                <field id="use_next_available"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="20"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Use Next Available Category</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[
+                        When the deepest category of a product is excluded, use its next deepest category. No: such
+                        products get no <code>category</code>.
+                    ]]></comment>
+                </field>
+                <field id="depth_limit"
+                       translate="label comment"
+                       type="text"
+                       sortOrder="30"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Depth Limit</label>
+                    <validate>validate-digits</validate>
+                    <comment><![CDATA[
+                        Maximum number of category levels, 0 = all. E.g. 2 with "Men/Tops/Jackets" gives "Men/Tops"
+                        (from the root) or "Tops/Jackets" (from the product category).
+                    ]]></comment>
+                </field>
+                <field id="depth_direction"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="40"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Keep Levels</label>
+                    <source_model>Perspective\Zaraz\Model\Config\Source\DepthDirection</source_model>
+                    <comment><![CDATA[Which levels remain when the depth is limited.]]></comment>
+                </field>
+                <field id="format"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="50"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Format</label>
+                    <source_model>Perspective\Zaraz\Model\Config\Source\CategoryFormat</source_model>
+                    <comment><![CDATA[
+                        Path: <code>category: "Men/Tops/Jackets"</code>. Levels: <code>category: "Men", category2:
+                        "Tops", category3: "Jackets"</code> (up to 5). Zaraz GA4 forwards only <code>category</code> per
+                        item; category2…5 are for Custom actions and other tools.
+                    ]]></comment>
+                </field>
+                <field id="separator"
+                       translate="label comment"
+                       type="text"
+                       sortOrder="60"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Path Separator</label>
+                    <comment><![CDATA[Separator of the path format.]]></comment>
+                    <depends>
+                        <field id="format">path</field>
+                    </depends>
+                </field>
+            </group>
+
+            <group id="properties" translate="label" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Product Properties</label>
+                <comment><![CDATA[
+                    Product properties are added to every product of every event. Zaraz GA4 forwards custom keys only at
+                    the event level, i.e. for single-product events (Product Viewed, Added, Removed, Clicked, Wishlist);
+                    inside <code>products</code> they reach Custom actions and other tools.
+                ]]></comment>
+                <field id="stock_status"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="10"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Stock Status</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[
+                        Adds <code>"in_stock"</code> / <code>"out_of_stock"</code> to products. Listing products use the
+                        listing stock data (no extra queries).
+                    ]]></comment>
+                </field>
+                <field id="stock_status_key"
+                       translate="label comment"
+                       type="text"
+                       sortOrder="11"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Stock Status: Property Name</label>
+                    <comment><![CDATA[Name of the property in the payload.]]></comment>
+                    <depends>
+                        <field id="stock_status">1</field>
+                    </depends>
+                </field>
+                <field id="review_count"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="20"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Review Count</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[
+                        Adds the number of approved reviews of the store (one query per list).
+                    ]]></comment>
+                </field>
+                <field id="review_count_key"
+                       translate="label comment"
+                       type="text"
+                       sortOrder="21"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Review Count: Property Name</label>
+                    <comment><![CDATA[Name of the property in the payload.]]></comment>
+                    <depends>
+                        <field id="review_count">1</field>
+                    </depends>
+                </field>
+                <field id="rating"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="30"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Rating</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Adds the average rating 0–5 with one decimal (e.g. <code>4.3</code>).]]></comment>
+                </field>
+                <field id="rating_key"
+                       translate="label comment"
+                       type="text"
+                       sortOrder="31"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Rating: Property Name</label>
+                    <comment><![CDATA[Name of the property in the payload.]]></comment>
+                    <depends>
+                        <field id="rating">1</field>
+                    </depends>
+                </field>
+                <field id="on_sale"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="40"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>On Sale</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[
+                        Adds <code>true</code> when the final price (special price, catalog rule) is lower than the
+                        regular price.
+                    ]]></comment>
+                </field>
+                <field id="on_sale_key"
+                       translate="label comment"
+                       type="text"
+                       sortOrder="41"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>On Sale: Property Name</label>
+                    <comment><![CDATA[Name of the property in the payload.]]></comment>
+                    <depends>
+                        <field id="on_sale">1</field>
+                    </depends>
+                </field>
+                <field id="custom_attributes"
+                       translate="label comment"
+                       type="text"
+                       sortOrder="50"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1">
+                    <label>Custom Attributes</label>
+                    <frontend_model>Perspective\Zaraz\Block\Adminhtml\Form\Field\CustomAttributes</frontend_model>
+                    <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
+                    <comment><![CDATA[
+                        Any number of rows: property name ↔ product attribute. Select attributes send the store label of
+                        the option (labels are read for the used options only). The child value is used for configurable
+                        lines when present.
+                    ]]></comment>
+                </field>
+            </group>
+
+            <group id="user" translate="label" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>User and Page Properties (zaraz.set)</label>
+                <comment><![CDATA[
+                    Keys set with <code>zaraz.set()</code> are attached by Zaraz to later <code>zaraz.track()</code>
+                    calls and are available in the dashboard as Track Property.
+                ]]></comment>
+                <field id="customer_id"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="10"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Customer ID</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[
+                        <code>zaraz.set(key, "123", {scope: "session"})</code> for logged-in customers, unset on logout.
+                        Delivered via customer-data, never cached.
+                    ]]></comment>
+                </field>
+                <field id="customer_id_key"
+                       translate="label comment"
+                       type="text"
+                       sortOrder="11"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Customer ID: Key</label>
+                    <comment><![CDATA[Key passed to <code>zaraz.set()</code>.]]></comment>
+                    <depends>
+                        <field id="customer_id">1</field>
+                    </depends>
+                </field>
+                <field id="customer_group"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="20"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Customer Group</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Group code, e.g. "NOT LOGGED IN", "General", scope session.]]></comment>
+                </field>
+                <field id="customer_group_key"
+                       translate="label comment"
+                       type="text"
+                       sortOrder="21"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Customer Group: Key</label>
+                    <comment><![CDATA[Key passed to <code>zaraz.set()</code>.]]></comment>
+                    <depends>
+                        <field id="customer_group">1</field>
+                    </depends>
+                </field>
+                <field id="page_type"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="30"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Page Type</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[
+                        home, category, product, search, cart, checkout, purchase, cms, wishlist, compare, other; scope
+                        page.
+                    ]]></comment>
+                </field>
+                <field id="page_type_key"
+                       translate="label comment"
+                       type="text"
+                       sortOrder="31"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Page Type: Key</label>
+                    <comment><![CDATA[Key passed to <code>zaraz.set()</code>.]]></comment>
+                    <depends>
+                        <field id="page_type">1</field>
+                    </depends>
+                </field>
+                <field id="page_name"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="40"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Page Name</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Page title; scope page.]]></comment>
+                </field>
+                <field id="page_name_key"
+                       translate="label comment"
+                       type="text"
+                       sortOrder="41"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Page Name: Key</label>
+                    <comment><![CDATA[Key passed to <code>zaraz.set()</code>.]]></comment>
+                    <depends>
+                        <field id="page_name">1</field>
+                    </depends>
+                </field>
+                <field id="email_hash"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="50"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Email Hash (SHA-256)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[
+                        SHA-256 of the trimmed lowercase email of a logged-in customer, scope session. The raw email is
+                        never sent.
+                    ]]></comment>
+                </field>
+                <field id="email_hash_key"
+                       translate="label comment"
+                       type="text"
+                       sortOrder="51"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Email Hash (SHA-256): Key</label>
+                    <comment><![CDATA[Key passed to <code>zaraz.set()</code>.]]></comment>
+                    <depends>
+                        <field id="email_hash">1</field>
+                    </depends>
+                </field>
+            </group>
+
+            <group id="attribution"
+                   translate="label"
+                   sortOrder="90"
+                   showInDefault="1"
+                   showInWebsite="1"
+                   showInStore="1">
+                <label>List Attribution</label>
+                <field id="enabled"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="10"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Remember Lists</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[
+                        The browser remembers (localStorage) the list a product was clicked in (<code>list_id</code>,
+                        <code>list_name</code>, <code>position</code>) and adds it to Product Viewed, Product
+                        Added/Removed, Cart Viewed, checkout events and Order Completed of that product.
+                    ]]></comment>
+                </field>
+                <field id="ttl_minutes"
+                       translate="label comment"
+                       type="text"
+                       sortOrder="20"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Remember For (minutes)</label>
+                    <validate>validate-digits validate-greater-than-zero</validate>
+                    <comment><![CDATA[How long a clicked list is attributed. 1440 = one day.]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+
+            <group id="ads" translate="label" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Google Ads Data</label>
+                <comment><![CDATA[
+                    Discount, coupon and order totals are standard Order Completed properties and are always sent.
+                ]]></comment>
+                <field id="enabled"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="10"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Add Google Ads Data to Order Completed</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[
+                        Only data: the Ads conversion (ID, label) is an action in the Zaraz dashboard that uses these
+                        properties.
+                    ]]></comment>
+                </field>
+                <field id="new_customer"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="20"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>New Customer</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[
+                        <code>new_customer: true</code> when the customer (or guest email) has no other non-canceled
+                        orders.
+                    ]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="lifetime_value"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="30"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Customer Lifetime Value</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[
+                        <code>customer_lifetime_value</code>: all non-canceled orders minus refunds, base currency.
+                    ]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="cart_items"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="40"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Cart Items</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[
+                        <code>ads_items: [{id, quantity, price}]</code> with the same id as <code>product_id</code> (for
+                        Ads cart data / dynamic remarketing).
+                    ]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="enhanced_conversions"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="50"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Enhanced Conversions</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[
+                        Adds <code>ec_*</code> properties from the billing address. Not confirmed to be supported by the
+                        Zaraz Google Ads tool by Cloudflare documentation.
+                    ]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="ec_fields"
+                       translate="label comment"
+                       type="multiselect"
+                       sortOrder="60"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Enhanced Conversions Fields</label>
+                    <source_model>Perspective\Zaraz\Model\Config\Source\EnhancedConversionFields</source_model>
+                    <comment><![CDATA[
+                        Email, phone, names and street are SHA-256 of normalized values; city, region, postal code,
+                        country are plain (Google requirements).
+                    ]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                        <field id="enhanced_conversions">1</field>
+                    </depends>
+                </field>
+                <field id="skip_zero_total"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="70"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Skip Zero Total Orders</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[
+                        No Ads data for orders with grand total 0 (Order Completed itself follows the Orders settings).
+                    ]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

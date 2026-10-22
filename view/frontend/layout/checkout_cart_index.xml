@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Perspective. All rights reserved.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="before.body.end">
+            <block name="perspective.zaraz.cart.events" template="Perspective_Zaraz::page-events.phtml"
+                   ifconfig="perspective_zaraz/general/enabled" before="-" cacheable="false">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Perspective\Zaraz\ViewModel\PageEvents</argument>
+                    <argument name="context_provider"
+                              xsi:type="object">Perspective\Zaraz\Model\Page\CartPageContext</argument>
+                    <argument name="events" xsi:type="array">
+                        <item name="cart_viewed" xsi:type="string">cart_viewed</item>
+                    </argument>
+                    <argument name="templates" xsi:type="array">
+
+                    </argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

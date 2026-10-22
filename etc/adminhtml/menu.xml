@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Perspective. All rights reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Perspective_Zaraz::zaraz"
+             title="Cloudflare Zaraz"
+             translate="title"
+             module="Perspective_Zaraz"
+             sortOrder="90"
+             parent="Magento_Backend::marketing"
+             resource="Perspective_Zaraz::preview"/>
+        <add id="Perspective_Zaraz::preview"
+             title="Preview Payload"
+             translate="title"
+             module="Perspective_Zaraz"
+             sortOrder="10"
+             parent="Perspective_Zaraz::zaraz"
+             action="perspective_zaraz/preview/index"
+             resource="Perspective_Zaraz::preview"/>
+        <add id="Perspective_Zaraz::settings"
+             title="Settings"
+             translate="title"
+             module="Perspective_Zaraz"
+             sortOrder="20"
+             parent="Perspective_Zaraz::zaraz"
+             action="adminhtml/system_config/edit/section/perspective_zaraz"
+             resource="Perspective_Zaraz::config"/>
+    </menu>
+</config>

@@ -1,0 +1,18 @@
+<?php
+/**
+ * Copyright © Perspective. All rights reserved.
+ */
+declare(strict_types=1);
+
+use Magento\Framework\View\Element\Template;
+use Magento\Framework\View\Helper\SecureHtmlRenderer;
+
+/** @var Template $block */
+/** @var SecureHtmlRenderer $secureRenderer */
+?>
+<?= /* @noEscape */ $secureRenderer->renderTag(
+    'script',
+    ['type' => 'text/x-magento-init'],
+    '{"*": {"Perspective_Zaraz/js/adapter/luma": {}}}',
+    false
+) ?>
