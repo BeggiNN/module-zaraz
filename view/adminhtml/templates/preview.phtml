@@ -1,0 +1,188 @@
+<?php
+/**
+ * Copyright © Perspective. All rights reserved.
+ */
+declare(strict_types=1);
+
+use Magento\Backend\Block\Template;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Helper\SecureHtmlRenderer;
+use Perspective\Zaraz\ViewModel\Preview;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+/** @var SecureHtmlRenderer $secureRenderer */
+/** @var Preview $viewModel */
+$viewModel = $block->getData('view_model');
+$params = $viewModel->getParams();
+$types = $viewModel->getTypes();
+$result = $viewModel->getResult();
+$events = $result['events'] ?? [];
+$sent = count(array_filter($events, static fn (array $card): bool => $card['skipped'] === null));
+?>
+<div class="pz-preview" id="pz-preview">
+    <p class="pz-intro">
+        <?= $escaper->escapeHtml(__(
+            'Events of a product, order or cart built with the current settings of the store — exactly what the '
+            . 'storefront passes to Zaraz. Nothing is sent or saved.'
+        )) ?>
+    </p>
+
+    <form method="get" action="<?= $escaper->escapeUrl($block->getUrl('*/*/index')) ?>" class="pz-toolbar">
+        <label class="pz-field">
+            <span class="pz-label"><?= $escaper->escapeHtml(__('Store View')) ?></span>
+            <select name="store" class="admin__control-select">
+                <?php foreach ($viewModel->getStores() as $id => $name): ?>
+                    <option value="<?= (int)$id ?>" <?= $id === $params['store'] ? 'selected' : '' ?>>
+                        <?= $escaper->escapeHtml($name) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </label>
+        <div class="pz-field">
+            <span class="pz-label"><?= $escaper->escapeHtml(__('Entity')) ?></span>
+            <div class="pz-segmented" role="radiogroup">
+                <?php foreach ($types as $value => $type): ?>
+                    <label class="pz-segment">
+                        <input type="radio" name="type" value="<?= $escaper->escapeHtmlAttr($value) ?>"
+                               data-placeholder="<?= $escaper->escapeHtmlAttr($type['placeholder']) ?>"
+                            <?= $value === $params['type'] ? 'checked' : '' ?>/>
+                        <span><?= $escaper->escapeHtml($type['label']) ?></span>
+                    </label>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <label class="pz-field pz-field-grow">
+            <span class="pz-label"><?= $escaper->escapeHtml(__('ID')) ?></span>
+            <input name="entity" class="admin__control-text" autocomplete="off"
+                   value="<?= $escaper->escapeHtmlAttr($params['id']) ?>"
+                   placeholder="<?= $escaper->escapeHtmlAttr($types[$params['type']]['placeholder']) ?>"/>
+        </label>
+        <button type="submit" class="action-primary pz-submit">
+            <span><?= $escaper->escapeHtml(__('Preview')) ?></span>
+        </button>
+    </form>
+
+    <?php if (isset($result['error'])): ?>
+        <div class="message message-error error"><div><?= $escaper->escapeHtml($result['error']) ?></div></div>
+    <?php elseif (!$result): ?>
+        <div class="pz-empty">
+            <div class="pz-empty-title"><?= $escaper->escapeHtml(__('Choose an entity and enter its ID')) ?></div>
+            <div class="pz-empty-text">
+                <?= $escaper->escapeHtml(__(
+                    'Product: Product Viewed, list, click, wishlist, compare. Order: Order Completed. '
+                    . 'Cart: Cart Viewed, Checkout Started and checkout templates.'
+                )) ?>
+            </div>
+        </div>
+    <?php else: ?>
+        <div class="pz-results-head">
+            <?= $escaper->escapeHtml(__('%1 of %2 events would be sent', $sent, count($events))) ?>
+        </div>
+        <?php foreach ($events as $card): ?>
+            <?php if ($card['skipped'] !== null): ?>
+                <section class="pz-card pz-card-skipped">
+                    <header class="pz-card-head">
+                        <span class="pz-badge pz-badge-skipped"><?= $escaper->escapeHtml(__('not sent')) ?></span>
+                        <code class="pz-code"><?= $escaper->escapeHtml($card['code']) ?></code>
+                    </header>
+                    <p class="pz-skip-reason"><?= $escaper->escapeHtml($card['skipped']) ?></p>
+                </section>
+                <?php continue; ?>
+            <?php endif; ?>
+            <section class="pz-card">
+                <header class="pz-card-head">
+                    <span class="pz-badge pz-badge-<?= $escaper->escapeHtmlAttr($card['method']) ?>">
+                        <?= $escaper->escapeHtml($card['method']) ?>
+                    </span>
+                    <h3 class="pz-name"><?= $escaper->escapeHtml($card['name']) ?></h3>
+                    <code class="pz-code"><?= $escaper->escapeHtml($card['code']) ?></code>
+                    <?php if ($card['destinations'] && !$card['renamed']): ?>
+                        <ul class="pz-destinations">
+                            <?php foreach ($card['destinations'] as $tool => $target): ?>
+                                <li class="<?= $target === null ? 'pz-dest-none' : '' ?>">
+                                    <span><?= $escaper->escapeHtml($tool) ?></span>
+                                    <b><?= $escaper->escapeHtml($target ?? '—') ?></b>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    <?php elseif ($card['renamed']): ?>
+                        <span class="pz-note">
+                            <?= $escaper->escapeHtml(
+                                __('Renamed in settings: e-commerce tools match spec names only')
+                            ) ?>
+                        </span>
+                    <?php endif; ?>
+                </header>
+
+                <?php if ($card['summary']): ?>
+                    <dl class="pz-summary">
+                        <?php foreach ($card['summary'] as $label => $value): ?>
+                            <div>
+                                <dt><?= $escaper->escapeHtml($label) ?></dt>
+                                <dd><?= $escaper->escapeHtml($value) ?></dd>
+                            </div>
+                        <?php endforeach; ?>
+                    </dl>
+                <?php endif; ?>
+
+                <?php if ($card['products']): ?>
+                    <table class="pz-products">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th><?= $escaper->escapeHtml(__('Product ID')) ?></th>
+                            <th><?= $escaper->escapeHtml(__('Name')) ?></th>
+                            <th><?= $escaper->escapeHtml(__('Variant')) ?></th>
+                            <th><?= $escaper->escapeHtml(__('Category')) ?></th>
+                            <th class="pz-num"><?= $escaper->escapeHtml(__('Qty')) ?></th>
+                            <th class="pz-num"><?= $escaper->escapeHtml(__('Price')) ?></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php foreach (array_slice($card['products'], 0, 20) as $index => $product): ?>
+                            <?php
+                            $cell = static fn (string $key, string $empty = '—'): string
+                                => (string)($product[$key] ?? $empty);
+                            ?>
+                            <tr>
+                                <td class="pz-muted"><?= (int)($product['position'] ?? $index + 1) ?></td>
+                                <td><code><?= $escaper->escapeHtml($cell('product_id', '')) ?></code></td>
+                                <td><?= $escaper->escapeHtml($cell('name', '')) ?></td>
+                                <td><?= $escaper->escapeHtml($cell('variant')) ?></td>
+                                <td class="pz-muted"><?= $escaper->escapeHtml($cell('category')) ?></td>
+                                <td class="pz-num"><?= $escaper->escapeHtml($cell('quantity')) ?></td>
+                                <td class="pz-num"><?= $escaper->escapeHtml($cell('price', '')) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php endif; ?>
+
+                <details class="pz-json">
+                    <summary>
+                        <span><?= $escaper->escapeHtml(__('JSON passed to Zaraz')) ?></span>
+                        <button type="button" class="action-secondary pz-copy"
+                                data-json="<?= $escaper->escapeHtmlAttr($card['json']) ?>"
+                                data-done="<?= $escaper->escapeHtmlAttr(__('Copied')) ?>">
+                            <?= $escaper->escapeHtml(__('Copy')) ?>
+                        </button>
+                    </summary>
+                    <pre><?= /* @noEscape */ $card['html'] ?></pre>
+                </details>
+            </section>
+        <?php endforeach; ?>
+        <p class="pz-footnote">
+            <?= $escaper->escapeHtml(__(
+                'Tool event names come from the Zaraz Managed Components for e-commerce events with spec names. '
+                . 'Checkout templates show the server part only: the browser adds shipping_tier, payment_type, step.'
+            )) ?>
+        </p>
+    <?php endif; ?>
+</div>
+<?= /* @noEscape */ $secureRenderer->renderTag(
+    'script',
+    ['type' => 'text/x-magento-init'],
+    '{"#pz-preview": {"Perspective_Zaraz/js/preview": {}}}',
+    false
+) ?>

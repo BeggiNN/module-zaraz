@@ -1,0 +1,28 @@
+<?php
+/**
+ * Copyright © Perspective. All rights reserved.
+ */
+declare(strict_types=1);
+
+use Magento\Framework\View\Element\Template;
+use Magento\Framework\View\Helper\SecureHtmlRenderer;
+use Perspective\Zaraz\ViewModel\PageEvents;
+
+/** @var Template $block */
+/** @var SecureHtmlRenderer $secureRenderer */
+/** @var PageEvents $viewModel */
+$viewModel = $block->getData('view_model');
+$provider = $block->getData('context_provider');
+$scripts = [
+    'events' => $viewModel->getEventsJson($provider, (array)$block->getData('events')),
+    'templates' => $viewModel->getTemplatesJson($provider, (array)$block->getData('templates')),
+];
+?>
+<?php foreach (array_filter($scripts) as $type => $json): ?>
+    <?= /* @noEscape */ $secureRenderer->renderTag(
+        'script',
+        ['type' => 'application/json', 'data-perspective-zaraz' => $type],
+        $json,
+        false
+    ) ?>
+<?php endforeach; ?>

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Perspective. All rights reserved.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Perspective_Zaraz::css/preview.css"/>
+    </head>
+    <body>
+        <referenceContainer name="content">
+            <block class="Magento\Backend\Block\Template" name="perspective.zaraz.preview"
+                   template="Perspective_Zaraz::preview.phtml">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Perspective\Zaraz\ViewModel\Preview</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

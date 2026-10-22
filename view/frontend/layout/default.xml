@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Perspective. All rights reserved.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="head.additional">
+            <block name="perspective.zaraz.head" template="Perspective_Zaraz::head.phtml"
+                   ifconfig="perspective_zaraz/general/enabled">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Perspective\Zaraz\ViewModel\Script</argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+        <referenceContainer name="before.body.end">
+            <block name="perspective.zaraz.page" template="Perspective_Zaraz::page.phtml"
+                   ifconfig="perspective_zaraz/general/enabled" before="-">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Perspective\Zaraz\ViewModel\PageEvents</argument>
+                    <argument name="context_provider"
+                              xsi:type="object">Perspective\Zaraz\Model\Page\StoreContext</argument>
+                    <argument name="templates" xsi:type="array">
+                        <item name="viewed_promotion" xsi:type="string">viewed_promotion</item>
+                        <item name="clicked_promotion" xsi:type="string">clicked_promotion</item>
+                    </argument>
+                </arguments>
+            </block>
+            <block name="perspective.zaraz.adapter" template="Perspective_Zaraz::adapter.phtml"
+                   ifconfig="perspective_zaraz/general/enabled"/>
+        </referenceContainer>
+    </body>
+</page>

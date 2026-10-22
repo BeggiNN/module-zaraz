@@ -1,0 +1,42 @@
+{
+    "name": "perspectiveteam/module-zaraz",
+    "description": "Magento 2 e-commerce data source for Cloudflare Zaraz (zaraz.ecommerce / zaraz.track / zaraz.set)",
+    "type": "magento2-module",
+    "license": "MIT",
+    "require": {
+        "php": "~8.2.0||~8.3.0||~8.4.0",
+        "laminas/laminas-uri": "^2.9",
+        "magento/framework": "~103.0.8",
+        "magento/module-backend": "~102.0.8",
+        "magento/module-catalog": "~104.0.8",
+        "magento/module-catalog-search": "~102.0.8",
+        "magento/module-catalog-widget": "~100.4.8",
+        "magento/module-checkout": "~100.4.8",
+        "magento/module-config": "~101.2.8",
+        "magento/module-configurable-product": "~100.4.8",
+        "magento/module-csp": "~100.4.7",
+        "magento/module-customer": "~103.0.8",
+        "magento/module-directory": "~100.4.8",
+        "magento/module-quote": "~101.2.8",
+        "magento/module-review": "~100.4.8",
+        "magento/module-search": "~101.1.8",
+        "magento/module-sales": "~103.0.8",
+        "magento/module-sales-rule": "~101.2.8",
+        "magento/module-store": "~101.1.8",
+        "magento/module-tax": "~100.4.8",
+        "magento/module-theme": "~101.1.8",
+        "magento/module-wishlist": "~101.2.8"
+    },
+    "suggest": {
+        "magento/module-inventory-sales-api": "Salable status for the stock_status product property when MSI is enabled",
+        "perspectiveteam/module-zaraz-server-side": "Server-side Order Completed / Order Refunded via Zaraz HTTP Events API"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Perspective\\Zaraz\\": ""
+        }
+    }
+}

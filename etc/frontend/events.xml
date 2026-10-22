@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Perspective. All rights reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="wishlist_add_product">
+        <observer name="perspective_zaraz_added_to_wishlist"
+                  instance="Perspective\Zaraz\Observer\Wishlist\QueueAddedToWishlist"/>
+    </event>
+    <event name="catalog_product_compare_add_product">
+        <observer name="perspective_zaraz_added_to_compare"
+                  instance="Perspective\Zaraz\Observer\Catalog\QueueAddedToCompare"/>
+    </event>
+    <event name="customer_register_success">
+        <observer name="perspective_zaraz_sign_up" instance="Perspective\Zaraz\Observer\Customer\QueueSignUp"/>
+    </event>
+    <event name="customer_login">
+        <observer name="perspective_zaraz_login" instance="Perspective\Zaraz\Observer\Customer\QueueLogin"/>
+    </event>
+    <event name="layout_load_before">
+        <observer name="perspective_zaraz_custom_checkout_handles"
+                  instance="Perspective\Zaraz\Observer\AddCustomCheckoutHandles"/>
+    </event>
+</config>

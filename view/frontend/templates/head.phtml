@@ -1,0 +1,36 @@
+<?php
+/**
+ * Copyright © Perspective. All rights reserved.
+ */
+declare(strict_types=1);
+
+use Perspective\Zaraz\ViewModel\Script;
+use Magento\Framework\View\Element\Template;
+use Magento\Framework\View\Helper\SecureHtmlRenderer;
+
+/** @var Template $block */
+/** @var SecureHtmlRenderer $secureRenderer */
+/** @var Script $viewModel */
+$viewModel = $block->getData('view_model');
+$attributes = $viewModel->getScriptAttributes();
+?>
+<?= /* @noEscape */ $secureRenderer->renderTag(
+    'script',
+    ['type' => 'application/json', 'id' => 'perspective-zaraz-config'],
+    $viewModel->getConfigJson(),
+    false
+) ?>
+<?= /* @noEscape */ $secureRenderer->renderTag(
+    'script',
+    ['src' => $block->getViewFileUrl('Perspective_Zaraz::js/perspective-zaraz.js'), 'defer' => 'defer'] + $attributes,
+    null,
+    false
+) ?>
+<?php if ($viewModel->isManualScript()): ?>
+    <?= /* @noEscape */ $secureRenderer->renderTag(
+        'script',
+        ['src' => $viewModel->getZarazScriptUrl(), 'referrerpolicy' => 'origin'] + $attributes,
+        null,
+        false
+    ) ?>
+<?php endif; ?>

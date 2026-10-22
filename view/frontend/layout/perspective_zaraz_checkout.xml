@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Perspective. All rights reserved.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="before.body.end">
+            <block name="perspective.zaraz.checkout.events" template="Perspective_Zaraz::page-events.phtml"
+                   ifconfig="perspective_zaraz/general/enabled" before="-" cacheable="false">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Perspective\Zaraz\ViewModel\PageEvents</argument>
+                    <argument name="context_provider"
+                              xsi:type="object">Perspective\Zaraz\Model\Page\CartPageContext</argument>
+                    <argument name="events" xsi:type="array">
+                        <item name="checkout_started" xsi:type="string">checkout_started</item>
+                    </argument>
+                    <argument name="templates" xsi:type="array">
+                        <item name="shipping_info_entered" xsi:type="string">shipping_info_entered</item>
+                        <item name="payment_info_entered" xsi:type="string">payment_info_entered</item>
+                        <item name="checkout_step_viewed" xsi:type="string">checkout_step_viewed</item>
+                        <item name="checkout_step_completed" xsi:type="string">checkout_step_completed</item>
+                    </argument>
+                </arguments>
+            </block>
+            <block name="perspective.zaraz.checkout.adapter" template="Perspective_Zaraz::checkout-adapter.phtml"
+                   ifconfig="perspective_zaraz/general/enabled"/>
+        </referenceContainer>
+    </body>
+</page>

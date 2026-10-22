@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Perspective. All rights reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="sales_quote_product_add_after">
+        <observer name="perspective_zaraz_remember_added_items"
+                  instance="Perspective\Zaraz\Observer\Cart\RememberAddedItems"/>
+    </event>
+    <event name="sales_quote_remove_item">
+        <observer name="perspective_zaraz_remember_removed_item"
+                  instance="Perspective\Zaraz\Observer\Cart\RememberRemovedItem"/>
+    </event>
+    <event name="sales_quote_merge_after">
+        <observer name="perspective_zaraz_mark_merged_quote"
+                  instance="Perspective\Zaraz\Observer\Cart\MarkMergedQuote"/>
+    </event>
+    <event name="sales_quote_save_before">
+        <observer name="perspective_zaraz_collect_cart_changes"
+                  instance="Perspective\Zaraz\Observer\Cart\CollectCartChanges"/>
+    </event>
+    <event name="sales_quote_save_after">
+        <observer name="perspective_zaraz_queue_cart_events"
+                  instance="Perspective\Zaraz\Observer\Cart\QueueCartEvents"/>
+    </event>
+</config>
